@@ -78,9 +78,9 @@ Run the application:
 
 Windows:
 ```
-java -cp ".;gson-2.11.0.jar" MainMenu
+java -cp ".;Eugene;Samuel;WongJunHoe;WongYiHoe;gson-2.11.0.jar" MainMenu
 ```
 Linux / macOS:
 ```
-java -cp ".:gson-2.11.0.jar" MainMenu
+java -cp ".:Eugene:Samuel:WongJunHoe:WongYiHoe:gson-2.11.0.jar" MainMenu
 ```
