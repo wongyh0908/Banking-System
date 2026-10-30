@@ -1,1 +1,24 @@
-[{"uuid":"fa0ae3ac-3a09-4d89-8d63-78bf4938a170","name":"test","age":12,"dob":"12/22/2323","mykad":"12313212331","gender":"M","username":"testtest"},{"uuid":"4f5cd93e-4a50-41df-a5e3-7cf4998d4965","name":"yihoe","age":19,"dob":"08/09/2007","mykad":"070908140817","gender":"M","username":"yh123456","accountNumber":"ACC1000","accountType":"Current"},{"uuid":"15ece478-ee78-4ff8-80ae-2a8055be445f","name":"Ram Devendram","age":18,"dob":"04/11/2007","mykad":"071104140445","gender":"M","username":"ramdevendram","accountNumber":"ACC1000","accountType":"Savings"}]
+[
+  {
+    "uuid": "5cbb7302-e02c-48b8-90fb-ef99e5548bdf",
+    "name": "Test User",
+    "age": 20,
+    "dob": "01/01/2000",
+    "mykad": "123456",
+    "gender": "M",
+    "username": "testtest",
+    "accountNumber": "SA1000",
+    "accountType": "Savings"
+  },
+  {
+    "uuid": "7bdc431a-6cc5-49da-a675-6bb068dbc6bd",
+    "name": "Ram Devendram",
+    "age": 20,
+    "dob": "04/12/2007",
+    "mykad": "07114041445",
+    "gender": "M",
+    "username": "RamDevendram",
+    "accountNumber": "SA1000",
+    "accountType": "Savings"
+  }
+]

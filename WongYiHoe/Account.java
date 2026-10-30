@@ -1,5 +1,6 @@
 public abstract class Account {
-    private static int counter = 1000;
+    private static int savingsCounter = 1000;
+    private static int currentCounter = 1000;
     
     private String accountNumber;
     private double balance;
@@ -8,7 +9,11 @@ public abstract class Account {
     private boolean isFrozen;
 
     public Account(String userUUID, String customerID, double initialBalance) {
-        this(userUUID, customerID, "ACC" + (counter++), initialBalance);
+        this(userUUID, customerID, initialBalance, "CA");
+    }
+
+    public Account(String userUUID, String customerID, double initialBalance, String accountPrefix) {
+        this(userUUID, customerID, generateAccountNumber(accountPrefix), initialBalance);
     }
 
     public Account(String userUUID, String customerID, String accountNumber, double initialBalance) {
@@ -45,17 +50,34 @@ public abstract class Account {
     public void setFrozen(boolean frozen) { 
         isFrozen = frozen; }
 
+    private static String generateAccountNumber(String accountPrefix) {
+        if ("SA".equals(accountPrefix)) {
+            return "SA" + (savingsCounter++);
+        }
+        return "CA" + (currentCounter++);
+    }
+
     private static void syncCounterWith(String accountNumber) {
-        if (accountNumber == null || !accountNumber.startsWith("ACC")) {
+        if (accountNumber == null || accountNumber.length() < 3) {
             return;
         }
-        String suffix = accountNumber.substring(3);
+        String prefix = accountNumber.substring(0, 2);
+        String suffix = accountNumber.substring(2);
+
+        if ("ACC".equals(accountNumber.substring(0, 3))) {
+            suffix = accountNumber.substring(3);
+            prefix = "SA";
+        }
+
         if (!suffix.matches("\\d+")) {
             return;
         }
         int usedNumber = Integer.parseInt(suffix);
-        if (usedNumber >= counter) {
-            counter = usedNumber + 1;
+
+        if ("SA".equals(prefix) && usedNumber >= savingsCounter) {
+            savingsCounter = usedNumber + 1;
+        } else if ("CA".equals(prefix) && usedNumber >= currentCounter) {
+            currentCounter = usedNumber + 1;
         }
     }
 

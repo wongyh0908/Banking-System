@@ -1,7 +1,7 @@
 public class CurrentAccount extends Account {
 
   public CurrentAccount(String userUUID, String customerID, double initialBalance) {
-    super(userUUID, customerID, initialBalance);
+    super(userUUID, customerID, initialBalance, "CA");
   }
 
   public CurrentAccount(String userUUID, String customerID, String accountNumber, double initialBalance) {

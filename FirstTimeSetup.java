@@ -1,9 +1,18 @@
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.UUID;
 
 public class FirstTimeSetup {
-  Scanner scanner = new Scanner(System.in);
+  Scanner scanner;
   FileManager fm = new FileManager();
+
+  public FirstTimeSetup() {
+    this(new Scanner(System.in));
+  }
+
+  public FirstTimeSetup(Scanner scanner) {
+    this.scanner = scanner;
+  }
 
   public void setup(UserCredentials user) {
     ArrayList<AccountDetails> accountProfiles = fm.loadAccounts();
@@ -50,6 +59,7 @@ public class FirstTimeSetup {
   private AccountDetails createProfile(UserCredentials user) {
     AccountDetails profile = new AccountDetails();
 
+    TerminalUI.clearScreen();
     printHeader("PROFILE SETUP");
     profile.setName(readName());
     profile.setAge(readPositiveInt("Enter your Age: "));
@@ -86,14 +96,16 @@ public class FirstTimeSetup {
       record.setInterestRate(0.0);
       record.setOverdraftLimit(0.0);
     }
+    record.setFrozen(false);
     return record;
   }
 
   private Account createNewAccountByChoice(String userUUID, String customerID) {
     while (true) {
-      System.out.println("\nSelect Account Type:");
-      System.out.println("  [1] Savings Account");
-      System.out.println("  [2] Current Account");
+      TerminalUI.clearScreen();
+      printHeader("SELECT ACCOUNT TYPE");
+      TerminalUI.printCentered("[1] Savings Account");
+      TerminalUI.printCentered("[2] Current Account");
       int choice = readMenuChoice("Please enter (1 / 2): ");
 
       if (choice == 1) {
@@ -107,43 +119,56 @@ public class FirstTimeSetup {
   }
 
   private Account restoreAccount(BankAccountRecord record) {
+    Account restoredAccount;
     if ("Savings".equalsIgnoreCase(record.getAccountType())) {
       double interestRate = record.getInterestRate() > 0 ? record.getInterestRate() : 2.5;
-      return new SavingsAccount(
+      restoredAccount = new SavingsAccount(
           record.getUserUUID(),
+          record.getAccountNumber(),
           record.getAccountNumber(),
           record.getBalance(),
           interestRate);
+    } else {
+      restoredAccount = new CurrentAccount(
+          record.getUserUUID(),
+          record.getAccountNumber(),
+          record.getAccountNumber(),
+          record.getBalance());
     }
-    return new CurrentAccount(
-        record.getUserUUID(),
-        record.getAccountNumber(),
-        record.getBalance());
+    restoredAccount.setFrozen(record.isFrozen());
+    return restoredAccount;
   }
 
   private void runAccountMenu(AccountDetails profile, BankAccountRecord record, ArrayList<BankAccountRecord> bankAccounts) {
     Account activeAccount = restoreAccount(record);
+    ArrayList<Transaction> transactions = fm.loadTransactions();
     boolean running = true;
 
     while (running) {
+      TerminalUI.clearScreen();
       printHeader("ACCOUNT DASHBOARD");
-      System.out.println("User           : " + profile.getName());
-      System.out.println("Account Number : " + record.getAccountNumber());
-      System.out.println("Account Type   : " + record.getAccountType());
-      System.out.println("Balance        : RM " + String.format("%.2f", activeAccount.getBalance()));
+      TerminalUI.printCentered("User           : " + profile.getName());
+      TerminalUI.printCentered("Account Number : " + record.getAccountNumber());
+      TerminalUI.printCentered("Account Type   : " + record.getAccountType());
+      TerminalUI.printCentered("Balance        : RM " + String.format("%.2f", activeAccount.getBalance()));
       System.out.println();
-      System.out.println("  [1] Deposit Funds");
-      System.out.println("  [2] Withdraw Funds");
-      System.out.println("  [3] Check Balance");
-      System.out.println("  [4] Run Monthly Process");
-      System.out.println("  [0] Logout to Main Menu");
+      TerminalUI.printCentered("[1] Deposit Funds");
+      TerminalUI.printCentered("[2] Withdraw Funds");
+      TerminalUI.printCentered("[3] Check Balance");
+      TerminalUI.printCentered("[4] Run Monthly Process");
+      TerminalUI.printCentered("[0] Logout to Main Menu");
 
       int choice = readMenuChoice("Please enter your choice: ");
+      boolean shouldPause = true;
 
       switch (choice) {
         case 1:
           double depAmount = readPositiveDouble("Deposit amount (RM): ");
+          double preDepositBalance = activeAccount.getBalance();
           activeAccount.deposit(depAmount);
+          if (activeAccount.getBalance() > preDepositBalance) {
+            recordTransaction(transactions, activeAccount, "Deposit", depAmount, "DEP");
+          }
           syncRecord(record, activeAccount);
           fm.saveBankAccounts(bankAccounts);
           break;
@@ -155,7 +180,10 @@ public class FirstTimeSetup {
             System.out.printf("Available Funds : RM %.2f%n", activeAccount.getBalance());
           }
           double withAmount = readPositiveDouble("Withdraw amount (RM): ");
-          activeAccount.withdraw(withAmount);
+          boolean withdrawSuccess = activeAccount.withdraw(withAmount);
+          if (withdrawSuccess) {
+            recordTransaction(transactions, activeAccount, "Withdraw", withAmount, "WDL");
+          }
           syncRecord(record, activeAccount);
           fm.saveBankAccounts(bankAccounts);
           break;
@@ -163,22 +191,35 @@ public class FirstTimeSetup {
           printBalance(activeAccount);
           break;
         case 4:
+          double preMonthlyBalance = activeAccount.getBalance();
           activeAccount.performMonthlyProcess();
+          double monthlyDelta = activeAccount.getBalance() - preMonthlyBalance;
+          if (monthlyDelta > 0) {
+            recordTransaction(transactions, activeAccount, "Monthly Interest", monthlyDelta, "MIP");
+          } else if (monthlyDelta < 0) {
+            recordTransaction(transactions, activeAccount, "Monthly Charge", Math.abs(monthlyDelta), "MCH");
+          }
           syncRecord(record, activeAccount);
           fm.saveBankAccounts(bankAccounts);
           break;
         case 0:
           running = false;
+          shouldPause = false;
           System.out.println("Returning to main menu...");
           break;
         default:
           System.out.println("Invalid selection, please try again.");
+      }
+
+      if (running && shouldPause) {
+        TerminalUI.pauseForEnter(scanner);
       }
     }
   }
 
   private void syncRecord(BankAccountRecord record, Account account) {
     record.setBalance(account.getBalance());
+    record.setFrozen(account.getIsFrozen());
     if (account instanceof SavingsAccount) {
       SavingsAccount savings = (SavingsAccount) account;
       record.setInterestRate(savings.getInterestRate());
@@ -188,6 +229,13 @@ public class FirstTimeSetup {
       record.setInterestRate(0.0);
       record.setOverdraftLimit(current.getOverdraftLimit());
     }
+  }
+
+  private void recordTransaction(ArrayList<Transaction> transactions, Account account,
+                                 String type, double amount, String referencePrefix) {
+    String reference = referencePrefix + "-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+    transactions.add(new Transaction(type, amount, reference, account.getUserUUID(), account.getAccountNumber()));
+    fm.saveTransactions(transactions);
   }
 
   private void printBalance(Account account) {
@@ -205,19 +253,19 @@ public class FirstTimeSetup {
   }
 
   private void printHeader(String title) {
-    System.out.println("\n╔════════════════════════════════════════════╗");
-    System.out.printf("║ %-42s ║%n", title);
-    System.out.println("╚════════════════════════════════════════════╝");
+    TerminalUI.printCentered("╔════════════════════════════════════════════╗");
+    TerminalUI.printCentered(String.format("║ %-42s ║", title));
+    TerminalUI.printCentered("╚════════════════════════════════════════════╝");
   }
 
   private int readMenuChoice(String prompt) {
     while (true) {
-      System.out.print(prompt);
+      System.out.print(TerminalUI.menuPrompt(prompt));
       String input = scanner.nextLine().trim();
       try {
         return Integer.parseInt(input);
       } catch (NumberFormatException e) {
-        System.out.println("Please enter a valid number.");
+        TerminalUI.printCentered("Please enter a valid number.");
       }
     }
   }
@@ -234,56 +282,56 @@ public class FirstTimeSetup {
 
   private double readPositiveDouble(String prompt) {
     while (true) {
-      System.out.print(prompt);
+      System.out.print(TerminalUI.menuPrompt(prompt));
       String input = scanner.nextLine().trim();
       try {
         double value = Double.parseDouble(input);
         if (value > 0) {
           return value;
         }
-        System.out.println("Amount must be greater than 0.");
+        TerminalUI.printCentered("Amount must be greater than 0.");
       } catch (NumberFormatException e) {
-        System.out.println("Please enter a valid amount.");
+        TerminalUI.printCentered("Please enter a valid amount.");
       }
     }
   }
 
   private String readName() {
     while (true) {
-      System.out.print("Enter your Name: ");
+      System.out.print(TerminalUI.menuPrompt("Enter your Name: "));
       String name = scanner.nextLine().trim();
       if (name.matches("[A-Za-z ]+")) {
         return name;
       }
-      System.out.println("Name can only contain letters and spaces.");
+      TerminalUI.printCentered("Name can only contain letters and spaces.");
     }
   }
 
   private String readDOB() {
     while (true) {
-      System.out.print("Enter your Date of Birth (DD/MM/YYYY): ");
+      System.out.print(TerminalUI.menuPrompt("Enter your Date of Birth (DD/MM/YYYY): "));
       String dob = scanner.nextLine().trim();
       if (dob.matches("\\d{2}/\\d{2}/\\d{4}")) {
         return dob;
       }
-      System.out.println("DOB must be in DD/MM/YYYY format.");
+      TerminalUI.printCentered("DOB must be in DD/MM/YYYY format.");
     }
   }
 
   private String readMykad() {
     while (true) {
-      System.out.print("Enter your MyKad: ");
+      System.out.print(TerminalUI.menuPrompt("Enter your MyKad: "));
       String mykad = scanner.nextLine().trim();
       if (mykad.matches("\\d+")) {
         return mykad;
       }
-      System.out.println("MyKad must be digits only.");
+      TerminalUI.printCentered("MyKad must be digits only.");
     }
   }
 
   private char readGender() {
     while (true) {
-      System.out.print("Select your Gender (1 = Male, 2 = Female): ");
+      System.out.print(TerminalUI.menuPrompt("Select your Gender (1 = Male, 2 = Female): "));
       String input = scanner.nextLine().trim();
       if ("1".equals(input)) {
         return 'M';
@@ -291,7 +339,7 @@ public class FirstTimeSetup {
       if ("2".equals(input)) {
         return 'F';
       }
-      System.out.println("Please enter 1 for Male or 2 for Female.");
+      TerminalUI.printCentered("Please enter 1 for Male or 2 for Female.");
     }
   }
 }

@@ -1,1 +1,24 @@
-[{"userUUID":"15ece478-ee78-4ff8-80ae-2a8055be445f","username":"ramdevendram","linkedProfileAccountNumber":"ACC1000","accountNumber":"ACC1000","accountType":"Savings","balance":1076.890625,"interestRate":2.5,"overdraftLimit":0.0}]
+[
+  {
+    "userUUID": "5cbb7302-e02c-48b8-90fb-ef99e5548bdf",
+    "username": "testtest",
+    "linkedProfileAccountNumber": "SA1000",
+    "accountNumber": "SA1000",
+    "accountType": "Savings",
+    "balance": 0.0,
+    "interestRate": 2.5,
+    "overdraftLimit": 0.0,
+    "frozen": false
+  },
+  {
+    "userUUID": "7bdc431a-6cc5-49da-a675-6bb068dbc6bd",
+    "username": "RamDevendram",
+    "linkedProfileAccountNumber": "SA1000",
+    "accountNumber": "SA1000",
+    "accountType": "Savings",
+    "balance": 0.0,
+    "interestRate": 2.5,
+    "overdraftLimit": 0.0,
+    "frozen": false
+  }
+]

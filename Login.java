@@ -1,39 +1,52 @@
-import com.google.gson.Gson;
-import java.io.FileWriter; //Write the json file
-import java.io.FileReader; //Read the Json File
-import java.io.IOException;
 import java.util.Scanner;
 import java.util.ArrayList;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
-import java.io.File; // Import the File class
-import java.io.FileNotFoundException; // Import this class to handle errors
 
 public class Login {
+  private static final String ADMIN_USERNAME = "TARCADMIN";
+  private static final String ADMIN_PASSWORD = "TARCADMIN";
   private String username;
   private String password;
   FileManager fm = new FileManager();
-  Scanner scanner = new Scanner(System.in);
+  Scanner scanner;
   ArrayList<UserCredentials> users = new ArrayList<>();
-  FirstTimeSetup fts = new FirstTimeSetup();
+  FirstTimeSetup fts;
+
+  public Login() {
+    this(new Scanner(System.in));
+  }
+
+  public Login(Scanner scanner) {
+    this.scanner = scanner;
+    this.fts = new FirstTimeSetup(scanner);
+  }
 
   public void loginLoop() {
     users = fm.loaduser();
 
     while (true) {
-      System.out.print("Enter your username: ");
+      System.out.print(TerminalUI.menuPrompt("Enter your username: "));
       username = scanner.nextLine();
-      System.out.print("Enter your password: ");
+      System.out.print(TerminalUI.menuPrompt("Enter your password: "));
       password = scanner.nextLine();
 
       for (UserCredentials user : users) {
         if (username.equals(user.getUsername()) && password.equals(user.getPassword())) {
-          System.out.println("Login successful!");
-          fts.setup(user);
+          TerminalUI.printCentered("Login successful!");
+          if (isAdminCredential(user)) {
+            TerminalUI.printCentered("Admin mode activated.");
+            AdminMenu adminMenu = new AdminMenu();
+            adminMenu.displayMenu(scanner);
+          } else {
+            fts.setup(user);
+          }
           return;
         }
       }
-      System.out.println("Username or password is wrong.");
+      TerminalUI.printCentered("Username or password is wrong.");
     }
+  }
+
+  private boolean isAdminCredential(UserCredentials user) {
+    return ADMIN_USERNAME.equals(user.getUsername()) && ADMIN_PASSWORD.equals(user.getPassword());
   }
 }

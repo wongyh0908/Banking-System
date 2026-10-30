@@ -1,16 +1,14 @@
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.FileWriter; //Write the json file
 import java.io.FileReader; //Read the Json File
 import java.io.IOException;
-import java.util.Scanner;
 import java.util.ArrayList;
 import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
-import java.io.File; // Import the File class
-import java.io.FileNotFoundException; // Import this class to handle errors
 
 public class FileManager {
-  Gson gson = new Gson();
+  Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
   public ArrayList<UserCredentials> loaduser() {
     try (FileReader reader = new FileReader("users.json")) {
