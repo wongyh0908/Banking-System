@@ -48,33 +48,30 @@ Banking-System/
 ```
 ## Getting Started
 
-## Prerequisites:
-
+### Prerequisites
 - Java Development Kit (JDK 17 or higher)
-
 - Git
 
-## Build and Run:
-
-Clone the repository:
+### Build and Run
+1. Clone the repository:
 
 ```
 git clone https://github.com/wongyh0908/Banking-System.git
 
 cd Banking-System
 ```
-Compile source files:
+2. Compile source files:
 
 Windows:
 
 ```
-javac -cp ".;gson-2.11.0.jar" *.java */*.java
+javac -cp ".;gson-2.11.0.jar" *.java Eugene/*.java Samuel/*.java WongJunHoe/*.java WongYiHoe/*.java
 ```
 Linux / macOS:
 ```
 javac -cp ".:gson-2.11.0.jar" *.java */*.java
 ```
-Run the application:
+3. Run the application:
 
 Windows:
 ```
