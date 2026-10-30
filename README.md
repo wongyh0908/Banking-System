@@ -46,30 +46,41 @@ Banking-System/
 ├── gson-2.11.0.jar
 └── README.md
 ```
-Getting Started
-Prerequisites
-Java Development Kit (JDK 17 or higher)
+## Getting Started
 
-Git
+## Prerequisites:
 
-Build and Run
+- Java Development Kit (JDK 17 or higher)
+
+- Git
+
+## Build and Run:
+
 Clone the repository:
 
+```
 git clone https://github.com/wongyh0908/Banking-System.git
+
 cd Banking-System
+```
 Compile source files:
-
-Windows (PowerShell / Command Prompt):
-
-javac -cp ".;gson-2.11.0.jar" *.java */*.java
-Linux / macOS:
-
-javac -cp ".:gson-2.11.0.jar" *.java */*.java
-Run the application:
 
 Windows:
 
-java -cp ".;gson-2.11.0.jar" MainMenu
+```
+javac -cp ".;gson-2.11.0.jar" *.java */*.java
+```
 Linux / macOS:
+```
+javac -cp ".:gson-2.11.0.jar" *.java */*.java
+```
+Run the application:
 
+Windows:
+```
+java -cp ".;gson-2.11.0.jar" MainMenu
+```
+Linux / macOS:
+```
 java -cp ".:gson-2.11.0.jar" MainMenu
+```
